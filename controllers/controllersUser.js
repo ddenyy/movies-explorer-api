@@ -8,8 +8,7 @@ const jwt = require('jsonwebtoken');
 
 const { NODE_ENV, JWT_SECRET = 'dev-key' } = process.env;
 
-
-
+// создает нового пользователя регистрация /signup
 module.exports.createUser = (req, res, next) => {
   const {
     name,
@@ -20,7 +19,7 @@ module.exports.createUser = (req, res, next) => {
   if (!email || !password) {
     return next(new NotFoundError('Email или password не могут быть пустыми'));
   }
-
+ // хэшируем пароль 
   return bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
@@ -43,8 +42,6 @@ module.exports.createUser = (req, res, next) => {
 
 };
 
-
-
 module.exports.getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
   User.findById(_id)
@@ -52,25 +49,38 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (!user) {
         return next(new NotFoundError('пользователь не найден'));
       }
-      return res.status(200).send({ data: user });
+      return res.status(200).send({ email: user.email, name: user.name });
     })
     .catch(next);
 };
 
 module.exports.updateUserData = (req, res, next) => {
+  const userId = req.user._id;
+  const {email, name} = req.body;
 
+  User.findByIdAndUpdate(userId, { name, email }, { runValidators: true, new: true })
+    .then((user) => {
+      if (!user) {
+        return next(new NotFoundError('пользователь с таким id не найден'));
+      }
+      return res.status(200).send({ email: user.email, name: user.name });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(new NotFoundError('пользователь с таким id не найден'));
+      }
+      return next(err);
+    });
 }
 
-module.exports.loginUser = (req, res, next) => {
-  const {
-    email,
-    password,
-  } = req.body;
-
+// проверка логина и пароля
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  console.log(email, password);
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-key', { expiresIn: '7d' });
       res.send({ token });
     })
     .catch(() => next(new UnauthorizedError('Неправильная почта или пароль')));
-}
+};
