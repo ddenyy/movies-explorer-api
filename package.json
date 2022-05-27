@@ -1,7 +1,7 @@
 {
   "name": "server",
   "author": "Denis_Osipov",
-  "description": "",
+  "description": "Дипломный проект. Backend часть приложения для поиска фильмов",
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
