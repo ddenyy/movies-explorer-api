@@ -1,4 +1,5 @@
 const { celebrate, Joi } = require('celebrate');
+const { LINK_REGEX } = require('../constants');
 
 // валидация логина
 const signInValidation = celebrate({
@@ -17,12 +18,6 @@ const signUpValidation = celebrate({
   }),
 });
 
-// const userIdValidation = celebrate({
-//   params: Joi.object().keys({
-//     userId: Joi.string().required().length(24).hex(),
-//   }),
-// });
-
 const updateUserValidation = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
@@ -30,31 +25,33 @@ const updateUserValidation = celebrate({
   }),
 });
 
-// const updateAvatarValidation = celebrate({
-//   body: Joi.object().keys({
-//     avatar: Joi.string().pattern(/(https|http):\/\/(www.)?[a-zA-Z0-9-_]+\.[a-zA-Z]+(\/[a-zA-Z0-9-._/~:@!$&'()*+,;=]*$)?/),
-//   }),
-// });
+const movieIdValidation = celebrate({
+  params: Joi.object().keys({
+    movieId: Joi.number().required(),
+  }),
+});
 
-// const cardIdValidation = celebrate({
-//   params: Joi.object().keys({
-//     cardId: Joi.string().required().length(24).hex(),
-//   }),
-// });
-
-// const createCardValidation = celebrate({
-//   body: Joi.object().keys({
-//     name: Joi.string().required().min(2).max(30),
-//     link: Joi.string().required().pattern(/(https|http):\/\/(www.)?[a-zA-Z0-9-_]+\.[a-zA-Z]+(\/[a-zA-Z0-9-._/~:@!$&'()*+,;=]*$)?/),
-//   }),
-// });
+const createMovieValidation = celebrate({
+  body: Joi.object().keys({
+    country: Joi.string().required().min(3),
+    director: Joi.string().required().min(2),
+    year: Joi.string().required().min(4),
+    duration: Joi.number().required(),
+    description: Joi.string().required(),
+    image: Joi.string().required().pattern(LINK_REGEX),
+    trailerLink: Joi.string().required().pattern(LINK_REGEX),
+    thumbnail: Joi.string().required().pattern(LINK_REGEX),
+    owner: Joi.string().hex().length(24),
+    movieId: Joi.number().required(),
+    nameRU: Joi.string().required(),
+    nameEN: Joi.string().required(),
+  }),
+});
 
 module.exports = {
   signUpValidation,
   signInValidation,
-  // userIdValidation,
   updateUserValidation,
-  // updateAvatarValidation,
-  // createCardValidation,
-  // cardIdValidation,
+  createMovieValidation,
+  movieIdValidation,
 };

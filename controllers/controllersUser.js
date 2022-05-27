@@ -1,10 +1,10 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 const { NODE_ENV, JWT_SECRET = 'dev-key' } = process.env;
 
@@ -19,7 +19,7 @@ module.exports.createUser = (req, res, next) => {
   if (!email || !password) {
     return next(new NotFoundError('Email или password не могут быть пустыми'));
   }
- // хэшируем пароль 
+  // хэшируем пароль
   return bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
@@ -38,8 +38,7 @@ module.exports.createUser = (req, res, next) => {
         return next(new ConflictError('Такой пользователь уже существует'));
       }
       return next(err);
-    })
-
+    });
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
@@ -56,7 +55,7 @@ module.exports.getCurrentUser = (req, res, next) => {
 
 module.exports.updateUserData = (req, res, next) => {
   const userId = req.user._id;
-  const {email, name} = req.body;
+  const { email, name } = req.body;
 
   User.findByIdAndUpdate(userId, { name, email }, { runValidators: true, new: true })
     .then((user) => {
@@ -71,12 +70,11 @@ module.exports.updateUserData = (req, res, next) => {
       }
       return next(err);
     });
-}
+};
 
 // проверка логина и пароля
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  console.log(email, password);
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-key', { expiresIn: '7d' });

@@ -1,7 +1,7 @@
-const router = require('express').Router();
 const Movie = require('../models/movies');
-
-
+const BadRequestError = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
 // запрос на вывод всех сохранённых фильмов из БД
 module.exports.getMovies = (req, res, next) => {
   Movie.find({})
@@ -47,12 +47,12 @@ module.exports.createMovie = (req, res, next) => {
         return next(new BadRequestError('переданы невалидные данные фильма'));
       }
       return next(err);
-    })
-}
+    });
+};
 
 module.exports.deleteMovie = (req, res, next) => {
   const { movieId } = req.params;
-  const {_id } = req.user;
+  const { _id } = req.user;
 
   Movie.findByIdAndRemove(movieId)
     .then((movie) => {
@@ -66,10 +66,8 @@ module.exports.deleteMovie = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('переданы невалидные данные карточки'));
+        next(new BadRequestError('переданы невалидные данные фильма'));
       }
       return next(err);
     });
-
-}
-
+};

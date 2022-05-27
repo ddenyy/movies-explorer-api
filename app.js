@@ -1,7 +1,13 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const router = require('./routes/routes');
+const cors = require('cors');
+const helmet = require('helmet');
+const { errors } = require('celebrate');
 const errorHandler = require('./middlewares/errorHandler');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+const limiter = require('./middlewares/limiter');
+const router = require('./routes/routes');
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
 
@@ -15,6 +21,25 @@ mongoose.connect('mongodb://localhost:27017/bitfilmsdb');
 
 app.listen(PORT);
 
+const corsOptions = {
+// только с источника http://localhost:3000 разрешены запросы
+  origin: ['http://localhost:3000', 'https://localhost:3000'],
+};
+
+// включаем валидацию запросов чтоб проходить проверку cors
+app.use(cors(corsOptions));
+// настраиваем заголовки
+app.use(helmet());
+// подключение лимитера
+app.use(limiter);
+// подключаем логгер запросов
+app.use(requestLogger);
+// подключаем все роуты
 app.use(router);
-//подключаем центролизованную обработку ошибок
+// подключаем логирование ошибок
+app.use(errorLogger);
+
+// обработка ошибок joi
+app.use(errors());
+// подключаем центролизованную обработку ошибок
 app.use(errorHandler);
