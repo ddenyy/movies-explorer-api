@@ -54,20 +54,40 @@ module.exports.deleteMovie = (req, res, next) => {
   const { movieId } = req.params;
   const { _id } = req.user;
 
-  Movie.findByIdAndRemove(movieId)
+  // Movie.findByIdAndRemove(movieId)
+  //   .then((movie) => {
+  //     if (!movie) {
+  //       return next(new NotFoundError('фильм с таким id не найдена'));
+  //     }
+  //     if (movie.owner.valueOf() !== _id) {
+  //       return next(new ForbiddenError('нельзя удалить чужой фильм'));
+  //     }
+  //     return res.status(200).send({ movie });
+  //   })
+  //   .catch((err) => {
+  //     if (err.name === 'CastError') {
+  //       next(new BadRequestError('переданы невалидные данные фильма'));
+  //     }
+  //     return next(err);
+  //   });
+  Movie.findById(movieId)
+    .orFail(() => next(new NotFoundError('Фильм не найден')))
     .then((movie) => {
-      if (!movie) {
-        return next(new NotFoundError('фильм с таким id не найдена'));
-      }
       if (movie.owner.valueOf() !== _id) {
-        return next(new ForbiddenError('нельзя удалить чужой фильм'));
+        return next(new ForbiddenError('Нельзя удалить чужой фильм'))
+      } else {
+        movie.remove()
+          .then(() => res.send({ movie }))
+          .catch(next);
       }
-      return res.status(200).send({ movie });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('переданы невалидные данные фильма'));
+        next(new BadRequestError('Переданы невалидные данные фильмы'));
+      } else {
+        next(err);
       }
-      return next(err);
-    });
+    })
+
+
 };

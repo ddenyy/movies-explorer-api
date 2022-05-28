@@ -5,7 +5,7 @@ const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
-
+const { developJwt } = require('../utils/config');
 const { NODE_ENV, JWT_SECRET = 'dev-key' } = process.env;
 
 // создает нового пользователя регистрация /signup
@@ -16,9 +16,6 @@ module.exports.createUser = (req, res, next) => {
     password,
   } = req.body;
 
-  if (!email || !password) {
-    return next(new NotFoundError('Email или password не могут быть пустыми'));
-  }
   // хэшируем пароль
   return bcrypt.hash(password, 10)
     .then((hash) => User.create({
@@ -67,6 +64,8 @@ module.exports.updateUserData = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(new NotFoundError('пользователь с таким id не найден'));
+      } else if (err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'))
       }
       return next(err);
     });
@@ -77,7 +76,7 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : developJwt, { expiresIn: '7d' });
       res.send({ token });
     })
     .catch(() => next(new UnauthorizedError('Неправильная почта или пароль')));

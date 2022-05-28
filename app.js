@@ -8,8 +8,9 @@ const errorHandler = require('./middlewares/errorHandler');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const limiter = require('./middlewares/limiter');
 const router = require('./routes/routes');
+const { developDataBaseUrl } = require('./utils/config');
 // Слушаем 3000 порт
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, NODE_ENV, DATA_BASE_URL } = process.env;
 
 const app = express();
 
@@ -17,7 +18,7 @@ const app = express();
 app.use(express.json());
 
 // подключение к БД
-mongoose.connect('mongodb://localhost:27017/bitfilmsdb');
+mongoose.connect(NODE_ENV === 'production' ? DATA_BASE_URL : developDataBaseUrl)
 
 app.listen(PORT);
 
@@ -30,10 +31,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 // настраиваем заголовки
 app.use(helmet());
-// подключение лимитера
-app.use(limiter);
 // подключаем логгер запросов
 app.use(requestLogger);
+// подключение лимитера
+app.use(limiter);
 // подключаем все роуты
 app.use(router);
 // подключаем логирование ошибок

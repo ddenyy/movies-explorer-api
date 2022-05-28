@@ -1,6 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
-const { LINK_REGEX } = require('../constants');
-
+const { WRONG_URL_FORMAT } = require('../constants');
+const validator = require('validator');
 // валидация логина
 const signInValidation = celebrate({
   body: Joi.object().keys({
@@ -12,7 +12,7 @@ const signInValidation = celebrate({
 // валидация регистрации
 const signUpValidation = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
+    name: Joi.string().required().min(2).max(30),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
@@ -27,7 +27,7 @@ const updateUserValidation = celebrate({
 
 const movieIdValidation = celebrate({
   params: Joi.object().keys({
-    movieId: Joi.number().required(),
+    movieId: Joi.string().required().length(24).hex(),
   }),
 });
 
@@ -38,9 +38,24 @@ const createMovieValidation = celebrate({
     year: Joi.string().required().min(4),
     duration: Joi.number().required(),
     description: Joi.string().required(),
-    image: Joi.string().required().pattern(LINK_REGEX),
-    trailerLink: Joi.string().required().pattern(LINK_REGEX),
-    thumbnail: Joi.string().required().pattern(LINK_REGEX),
+    image: Joi.string().required().custom((value, helpers) => {
+      if (validator.isUrl(value)) {
+        return value;
+      }
+      return helpers.message(WRONG_URL_FORMAT);
+    }),
+    trailerLink: Joi.string().required().custom((value, helpers) => {
+      if (validator.isUrl(value)) {
+        return value;
+      }
+      return helpers.message(WRONG_URL_FORMAT);
+    }),
+    thumbnail: Joi.string().required().custom((value, helpers) => {
+      if (validator.isUrl(value)) {
+        return value;
+      }
+      return helpers.message(WRONG_URL_FORMAT);
+    }),
     owner: Joi.string().hex().length(24),
     movieId: Joi.number().required(),
     nameRU: Joi.string().required(),
