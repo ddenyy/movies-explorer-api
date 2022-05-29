@@ -18,7 +18,7 @@ const app = express();
 app.use(express.json());
 
 // подключение к БД
-mongoose.connect(NODE_ENV === 'production' ? DATA_BASE_URL : developDataBaseUrl)
+mongoose.connect(NODE_ENV === 'production' ? DATA_BASE_URL : developDataBaseUrl);
 
 app.listen(PORT);
 

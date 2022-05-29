@@ -1,3 +1,4 @@
+const { NODE_ENV, JWT_SECRET = 'dev-key' } = process.env;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -6,7 +7,12 @@ const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const { developJwt } = require('../utils/config');
-const { NODE_ENV, JWT_SECRET = 'dev-key' } = process.env;
+const {
+  USER_NOT_FOUND,
+  INVALID_DATA_CREATE_USER,
+  EMAIL_ALREADY_EXISTS,
+  INVALID_PAS_OR_EMAIL,
+} = require('../utils/constants');
 
 // создает нового пользователя регистрация /signup
 module.exports.createUser = (req, res, next) => {
@@ -23,16 +29,16 @@ module.exports.createUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then(() => res.status(200).send({
+    .then(() => res.send({
       name,
       email,
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError(INVALID_DATA_CREATE_USER));
       }
       if (err.code === 11000) {
-        return next(new ConflictError('Такой пользователь уже существует'));
+        return next(new ConflictError(EMAIL_ALREADY_EXISTS));
       }
       return next(err);
     });
@@ -43,9 +49,9 @@ module.exports.getCurrentUser = (req, res, next) => {
   User.findById(_id)
     .then((user) => {
       if (!user) {
-        return next(new NotFoundError('пользователь не найден'));
+        return next(new NotFoundError(USER_NOT_FOUND));
       }
-      return res.status(200).send({ email: user.email, name: user.name });
+      return res.send({ email: user.email, name: user.name });
     })
     .catch(next);
 };
@@ -57,17 +63,18 @@ module.exports.updateUserData = (req, res, next) => {
   User.findByIdAndUpdate(userId, { name, email }, { runValidators: true, new: true })
     .then((user) => {
       if (!user) {
-        return next(new NotFoundError('пользователь с таким id не найден'));
+        return next(new NotFoundError(USER_NOT_FOUND));
       }
-      return res.status(200).send({ email: user.email, name: user.name });
+      return res.send({ email: user.email, name: user.name });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(new NotFoundError('пользователь с таким id не найден'));
+        next(new BadRequestError(USER_NOT_FOUND));
       } else if (err.code === 11000) {
-        next(new ConflictError('Пользователь с таким email уже зарегистрирован'))
+        next(new ConflictError(EMAIL_ALREADY_EXISTS));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 
@@ -79,5 +86,5 @@ module.exports.login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : developJwt, { expiresIn: '7d' });
       res.send({ token });
     })
-    .catch(() => next(new UnauthorizedError('Неправильная почта или пароль')));
+    .catch(() => next(new UnauthorizedError(INVALID_PAS_OR_EMAIL)));
 };

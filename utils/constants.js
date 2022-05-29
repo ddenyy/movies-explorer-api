@@ -5,7 +5,6 @@ const ERROR_CODE_NOT_FOUND = 404;
 const ERROR_CODE_CONFLICT = 409;
 const ERROR_CODE_INTERNAL_SERVER_ERROR = 500;
 
-
 const INVALID_DATA_MOVIE_DELETE = 'Переданы некорректные данные при удалении фильма';
 const INVALID_DATA_CREATE_MOVIE = 'Переданы некорректные данные при создании фильма';
 const ACCESS_RIGHTS_ERROR = 'Нельзя удалить чужой фильм';
@@ -15,10 +14,10 @@ const INVALID_DATA_CREATE_USER = 'Переданы некорректные да
 const INVALID_DATA_UPDATE_PROFILE = 'Переданы некорректные данные при обновлении профиля';
 const USER_NOT_FOUND = 'Пользователь не найден';
 const AUTHORIZATION_REQUIRED = 'Необходима авторизация';
-const SERVER_ERROR = 'Ошибка сервера'
+const SERVER_ERROR = 'Ошибка сервера';
 const INVALID_PAS_OR_EMAIL = 'Неправильные почта или пароль';
 const INVALID_EMAIL = 'Некорректный email';
-const WRONG_URL_FORMAT = 'Некорректный адрес URL.';
+const INVALID_URL_FORMAT = 'Некорректный адрес URL.';
 const URL_NOT_FOUND = 'Неправильный адрес запроса';
 
 module.exports = {
@@ -29,7 +28,7 @@ module.exports = {
   ERROR_CODE_UNAUTHORIZED,
   ERROR_CODE_CONFLICT,
   URL_NOT_FOUND,
-  WRONG_URL_FORMAT,
+  INVALID_URL_FORMAT,
   INVALID_EMAIL,
   INVALID_PAS_OR_EMAIL,
   SERVER_ERROR,
@@ -41,5 +40,5 @@ module.exports = {
   NOT_FOUND_MOVIE,
   ACCESS_RIGHTS_ERROR,
   INVALID_DATA_CREATE_MOVIE,
-  INVALID_DATA_MOVIE_DELETE
+  INVALID_DATA_MOVIE_DELETE,
 };

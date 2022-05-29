@@ -1,6 +1,14 @@
 const { celebrate, Joi } = require('celebrate');
-const { WRONG_URL_FORMAT } = require('../constants');
-const validator = require('validator');
+const isURL = require('validator/lib/isURL');
+const { WRONG_URL_FORMAT } = require('../utils/constants');
+
+const validationUrl = (value, helpers) => {
+  if (isURL(value)) {
+    return value;
+  }
+  return helpers.message(WRONG_URL_FORMAT);
+};
+
 // валидация логина
 const signInValidation = celebrate({
   body: Joi.object().keys({
@@ -38,25 +46,9 @@ const createMovieValidation = celebrate({
     year: Joi.string().required().min(4),
     duration: Joi.number().required(),
     description: Joi.string().required(),
-    image: Joi.string().required().custom((value, helpers) => {
-      if (validator.isUrl(value)) {
-        return value;
-      }
-      return helpers.message(WRONG_URL_FORMAT);
-    }),
-    trailerLink: Joi.string().required().custom((value, helpers) => {
-      if (validator.isUrl(value)) {
-        return value;
-      }
-      return helpers.message(WRONG_URL_FORMAT);
-    }),
-    thumbnail: Joi.string().required().custom((value, helpers) => {
-      if (validator.isUrl(value)) {
-        return value;
-      }
-      return helpers.message(WRONG_URL_FORMAT);
-    }),
-    owner: Joi.string().hex().length(24),
+    image: Joi.string().required().custom(validationUrl),
+    trailerLink: Joi.string().required().custom(validationUrl),
+    thumbnail: Joi.string().required().custom(validationUrl),
     movieId: Joi.number().required(),
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
